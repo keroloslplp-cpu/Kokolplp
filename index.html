@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نظام إدارة مؤسسة كيرو للأدوات الصحية</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="app-header no-print">
+    <div class="brand">
+      <div class="brand-title">مؤسسة كيرو للأدوات الصحية</div>
+      <div class="brand-sub">سوهاج - دار السلام - نجوع مازن شرق | 01225680001 - 01011085134</div>
+    </div>
+    <div class="header-actions">
+      <button id="btnPrint" class="btn outline">🖨️ طباعة</button>
+      <button id="btnLogout" class="btn danger">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <!-- شاشة تسجيل الدخول -->
+  <section id="loginSection" class="card center-screen">
+    <h1>تسجيل الدخول</h1>
+    <p class="muted">اسم المستخدم وكلمة المرور: <b>1234</b></p>
+    <div class="form-grid">
+      <label>اسم المستخدم</label>
+      <input id="loginUser" type="password" placeholder="أدخل 1234"/>
+      <label>كلمة المرور</label>
+      <input id="loginPass" type="password" placeholder="أدخل 1234"/>
+      <button id="btnLogin" class="btn primary full">دخول</button>
+    </div>
+  </section>
+
+  <!-- المحتوى الرئيسي -->
+  <main id="app" class="container hidden">
+    <!-- شريط التنقل -->
+    <nav class="tabs no-print">
+      <button data-tab="inventory" class="active">إدارة المخزون</button>
+      <button data-tab="sales">المبيعات اليومية</button>
+      <button data-tab="invoice">فاتورة الفاتورة</button>
+      <button data-tab="sales-return">مرتجع المبيعات</button>
+      <button data-tab="invoice-return">مرتجع الفاتورة</button>
+      <button data-tab="instant-sales">مبيعات فورية</button>
+      <button data-tab="records">السجلات</button>
+      <button data-tab="reports">التقارير</button>
+    </nav>
+
+    <!-- إدارة المخزون -->
+    <section id="inventory" class="tab active">
+      <div class="card">
+        <h2>إدارة المخزون</h2>
+        <div class="form-grid">
+          <label>الاسم</label>
+          <input id="invName" placeholder="اسم المنتج"/>
+          <label>المكون/الوصف</label>
+          <input id="invDesc" placeholder="الوصف"/>
+          <label>السعر (ج.م)</label>
+          <input id="invPrice" type="number" step="0.01" placeholder="0.00"/>
+          <label>الكمية</label>
+          <input id="invQty" type="number" step="1" placeholder="0"/>
+          <button id="btnAddItem" class="btn primary full">➕ إضافة</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <input id="invSearch" placeholder="🔎 بحث بالاسم..."/>
+        </div>
+        <div class="table-wrap">
+          <table id="invTable">
+            <thead>
+              <tr>
+                <th>#</th><th>الاسم</th><th>الوصف</th><th>السعر</th><th>الكمية</th><th class="no-print">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- المبيعات اليومية -->
+    <section id="sales" class="tab">
+      <div class="card">
+        <h2>المبيعات اليومية</h2>
+        <div class="form-grid">
+          <label>اسم العميل</label>
+          <input id="salesCustomer" placeholder="اسم العميل (اختياري)"/>
+          <label>المنتج</label>
+          <input id="salesProduct" list="inventoryList" placeholder="ابحث عن منتج..."/>
+          <datalist id="inventoryList"></datalist>
+          <label>الكمية</label>
+          <input id="salesQty" type="number" value="1"/>
+          <label>سعر (اختياري)</label>
+          <input id="salesPrice" type="number" step="0.01" placeholder="اتركه فارغاً لاستعمال سعر المخزون"/>
+          <button id="btnAddSaleItem" class="btn primary full">➕ إضافة للجدول</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="salesTable">
+            <thead>
+              <tr><th>#</th><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th class="no-print">حذف</th></tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr><td colspan="4">المجموع</td><td id="salesTotal">0.00</td><td></td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnSaveSale" class="btn success">💾 حفظ (يخصم من المخزون)</button>
+          <button id="btnClearSale" class="btn outline">🧹 مسح</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- فاتورة الفاتورة -->
+    <section id="invoice" class="tab">
+      <div class="card">
+        <h2>الفاتورة</h2>
+        <div class="form-grid">
+          <label>اسم العميل</label>
+          <input id="invCustomer" placeholder="اسم العميل"/>
+          <label>المنتج</label>
+          <input id="invProductInput" list="inventoryList" placeholder="ابحث عن منتج..."/>
+          <label>الكمية</label>
+          <input id="invProductQty" type="number" value="1"/>
+          <label>سعر (اختياري)</label>
+          <input id="invProductPrice" type="number" step="0.01"/>
+          <button id="btnAddInvRow" class="btn primary full">➕ إضافة</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="invoiceMeta" class="muted">
+          <span>التاريخ: <b id="invoiceDate"></b></span> •
+          <span>رقم التسجيل: <b id="invoiceNumber"></b></span>
+        </div>
+        <div class="table-wrap">
+          <table id="invoiceTable">
+            <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th class="no-print">حذف</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4">الإجمالي</td><td id="invoiceTotal">0.00</td><td></td></tr></tfoot>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnInvoiceSave" class="btn success">💾 حفظ (إلى سجل الفاتورة + خصم المخزون)</button>
+          <button id="btnInvoiceArchive" class="btn">🗄️ أرشيف (بدون خصم)</button>
+          <button id="btnInvoicePrint" class="btn outline">🖨️ طباعة</button>
+          <button id="btnInvoiceClear" class="btn outline">🧹 مسح</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- مرتجع المبيعات -->
+    <section id="sales-return" class="tab">
+      <div class="card">
+        <h2>مرتجع المبيعات</h2>
+        <div class="form-grid">
+          <label>اسم العميل</label>
+          <input id="srCustomer" placeholder="اسم العميل"/>
+          <label>المنتج</label>
+          <input id="srProduct" list="inventoryList" placeholder="ابحث عن منتج..."/>
+          <label>الكمية</label>
+          <input id="srQty" type="number" value="1"/>
+          <button id="btnAddSR" class="btn primary full">➕ إضافة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="srTable">
+            <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th class="no-print">حذف</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnSaveSR" class="btn success">💾 حفظ (يرجع للمخزون)</button>
+          <button id="btnClearSR" class="btn outline">🧹 مسح</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- مرتجع الفاتورة -->
+    <section id="invoice-return" class="tab">
+      <div class="card">
+        <h2>مرتجع الفاتورة</h2>
+        <div class="form-grid">
+          <label>اسم العميل</label>
+          <input id="irCustomer" placeholder="اسم العميل"/>
+          <label>المنتج</label>
+          <input id="irProduct" list="inventoryList" placeholder="ابحث عن منتج..."/>
+          <label>الكمية</label>
+          <input id="irQty" type="number" value="1"/>
+          <button id="btnAddIR" class="btn primary full">➕ إضافة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="irTable">
+            <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th class="no-print">حذف</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnSaveIR" class="btn success">💾 حفظ (مع الإرجاع للمخزون)</button>
+          <button id="btnClearIR" class="btn outline">🧹 مسح</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- مبيعات فورية -->
+    <section id="instant-sales" class="tab">
+      <div class="card">
+        <h2>مبيعات فورية</h2>
+        <div class="form-grid">
+          <label>اسم العميل</label>
+          <input id="isCustomer" placeholder="اسم العميل"/>
+          <label>نوع الصنف</label>
+          <select id="isType">
+            <option>كارت</option><option>تحويل</option><option>نقدي</option><option>أخرى</option>
+          </select>
+          <label>حالة الدفع</label>
+          <select id="isStatus">
+            <option>تم الدفع</option><option>جزئي</option><option>في الانتظار</option>
+          </select>
+          <label>مدفوع</label>
+          <input id="isPaid" type="number" step="0.01" value="0"/>
+          <label>متبقي</label>
+          <input id="isRemain" type="number" step="0.01" value="0"/>
+          <label>الصنف</label>
+          <input id="isProduct" list="inventoryList" placeholder="اسم الصنف"/>
+          <label>الكمية</label>
+          <input id="isQty" type="number" value="1"/>
+          <label>سعر (اختياري)</label>
+          <input id="isPrice" type="number" step="0.01"/>
+          <button id="btnAddIS" class="btn primary full">➕ إضافة</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="isTable">
+            <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th class="no-print">حذف</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="4">المجموع</td><td id="isTotal">0.00</td><td></td></tr></tfoot>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnSaveIS" class="btn success">💾 حفظ في سجل المبيعات الفورية</button>
+          <button id="btnClearIS" class="btn outline">🧹 مسح</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- السجلات -->
+    <section id="records" class="tab">
+      <div class="card">
+        <h2>السجلات</h2>
+        <div class="record-tabs no-print">
+          <button data-r="sales" class="active">سجل المبيعات</button>
+          <button data-r="invoices">سجل الفاتورة</button>
+          <button data-r="archives">أرشيف الفاتورة</button>
+          <button data-r="salesReturns">سجل مرتجع المبيعات</button>
+          <button data-r="invoiceReturns">سجل مرتجع الفاتورة</button>
+          <button data-r="instant">سجل مبيعات فوري ⭐</button>
+          <button data-r="postponed">سجل المؤجل ⭐</button>
+        </div>
+
+        <div class="toolbar">
+          <input id="recSearch" placeholder="🔎 بحث باسم العميل..."/>
+        </div>
+
+        <div id="recTables">
+          <div data-rt="sales" class="rec active">
+            <table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>الإجمالي</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table>
+          </div>
+          <div data-rt="invoices" class="rec"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>الإجمالي</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table></div>
+          <div data-rt="archives" class="rec"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>الإجمالي</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table></div>
+          <div data-rt="salesReturns" class="rec"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>الصنف</th><th>الكمية</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table></div>
+          <div data-rt="invoiceReturns" class="rec"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>الصنف</th><th>الكمية</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table></div>
+          <div data-rt="instant" class="rec"><table><thead><tr><th>#</th><th>التاريخ</th><th>العميل</th><th>النوع</th><th>الحالة</th><th>الإجمالي</th><th class="no-print">تفاصيل</th><th class="no-print">حذف</th></tr></thead><tbody></tbody></table></div>
+          <div data-rt="postponed" class="rec"><div class="muted">⭐ قريباً: سيتم إضافة المبيعات المؤجلة مع تفاصيل الدفع.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- التقارير -->
+    <section id="reports" class="tab">
+      <div class="card">
+        <h2>التقارير</h2>
+        <div class="form-grid">
+          <label>نوع التقرير</label>
+          <select id="repType">
+            <option value="sales">المبيعات</option>
+            <option value="invoices">الفواتير</option>
+            <option value="archives">أرشيف الفواتير</option>
+            <option value="salesReturns">مرتجع المبيعات</option>
+            <option value="invoiceReturns">مرتجع الفاتورة</option>
+            <option value="instant">مبيعات فورية</option>
+          </select>
+          <label>الفترة</label>
+          <select id="repRange">
+            <option value="day">اليوم</option>
+            <option value="month">هذا الشهر</option>
+            <option value="all">الكل</option>
+          </select>
+          <button id="btnGenReport" class="btn primary full">توليد التقرير</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="repTable">
+            <thead><tr><th>#</th><th>التاريخ</th><th>العميل/الوصف</th><th>الإجمالي</th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><td colspan="3">الإجمالي</td><td id="repTotal">0.00</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="actions">
+          <button id="btnPrintReport" class="btn outline">🖨️ طباعة التقرير</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- منطقة الطباعة -->
+  <section id="printArea" class="print-area">
+    <div class="print-header">
+      <div>
+        <div class="brand-title">مؤسسة كيرو للأدوات الصحية</div>
+        <div class="brand-sub">سوهاج - دار السلام - نجوع مازن شرق</div>
+        <div class="brand-sub">هاتف: 01225680001 - 01011085134</div>
+      </div>
+      <div class="print-meta" id="printMeta"></div>
+    </div>
+    <div id="printContent"></div>
+  </section>
+
+  <footer class="no-print">
+    <small>© مؤسسة كيرو للأدوات الصحية — يعمل بدون إنترنت باستخدام LocalStorage</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
